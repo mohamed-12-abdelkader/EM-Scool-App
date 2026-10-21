@@ -1,45 +1,41 @@
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
-import { I18nManager, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+} from '@expo-google-fonts/jetbrains-mono';
 import {
   Cairo_400Regular,
   Cairo_500Medium,
   Cairo_600SemiBold,
   Cairo_700Bold,
-  useFonts,
 } from '@expo-google-fonts/cairo';
 import * as SystemUI from 'expo-system-ui';
 import { ToastProvider } from '@/components/ui';
+import { AuthProvider } from '@/lib/auth';
 import { colors } from '@/theme/tokens';
-
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
-if (typeof document !== 'undefined') {
-  document.documentElement.setAttribute('dir', 'rtl');
-  document.documentElement.setAttribute('lang', 'ar');
-  document.body.style.direction = 'rtl';
-  // Inject CSS so sidebar stays on the physical right under RTL
-  const existing = document.getElementById('em-rtl-layout-css');
-  if (!existing) {
-    const style = document.createElement('style');
-    style.id = 'em-rtl-layout-css';
-    style.textContent = `
-      #em-sidebar-right, #em-drawer-right {
-        left: auto !important;
-        right: 0 !important;
-        inset-inline-start: 0 !important;
-        inset-inline-end: auto !important;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-}
 
 export default function RootLayout() {
   const [loaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
     Cairo_400Regular,
     Cairo_500Medium,
     Cairo_600SemiBold,
@@ -47,31 +43,35 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    SystemUI.setBackgroundColorAsync(colors.background);
+    SystemUI.setBackgroundColorAsync(colors.bgCanvas);
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      document.documentElement.setAttribute('dir', 'rtl');
-      document.documentElement.setAttribute('lang', 'ar');
+      document.documentElement.setAttribute('lang', 'en');
+      document.documentElement.setAttribute('dir', 'ltr');
+      document.body.style.direction = 'ltr';
+      document.body.style.fontFamily = 'PlusJakartaSans_400Regular, system-ui, sans-serif';
     }
   }, []);
 
   if (!loaded) {
-    return <View style={{ flex: 1, backgroundColor: colors.background, direction: 'rtl' }} />;
+    return <View style={{ flex: 1, backgroundColor: colors.bgCanvas }} />;
   }
 
   return (
     <SafeAreaProvider>
-      <ToastProvider>
-        <StatusBar style="dark" />
-        <View style={{ flex: 1, direction: 'rtl' }}>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.background, direction: 'rtl' },
-              animation: 'slide_from_left',
-            }}
-          />
-        </View>
-      </ToastProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <StatusBar style="dark" />
+          <View style={{ flex: 1, direction: 'ltr' }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.bgCanvas },
+                animation: 'fade',
+              }}
+            />
+          </View>
+        </ToastProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

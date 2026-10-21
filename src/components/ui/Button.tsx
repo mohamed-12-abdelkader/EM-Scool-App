@@ -13,6 +13,7 @@ interface ButtonProps {
   icon?: string;
   disabled?: boolean;
   style?: ViewStyle;
+  fullWidth?: boolean;
 }
 
 export function Button({
@@ -23,6 +24,7 @@ export function Button({
   icon,
   disabled,
   style,
+  fullWidth,
 }: ButtonProps) {
   const tone = variantStyles[variant];
   const sizing = sizeStyles[size];
@@ -39,7 +41,10 @@ export function Button({
           opacity: disabled ? 0.5 : pressed ? 0.88 : 1,
           paddingHorizontal: sizing.px,
           paddingVertical: sizing.py,
+          borderRadius: radii.xl,
+          alignSelf: fullWidth ? 'stretch' : 'flex-start',
         },
+        variant === 'primary' ? styles.primaryShadow : null,
         style,
       ]}
     >
@@ -52,9 +57,9 @@ export function Button({
 }
 
 const variantStyles = {
-  primary: { bg: colors.primary, border: colors.primary, text: '#FFFFFF' },
-  secondary: { bg: colors.secondary, border: colors.secondary, text: '#FFFFFF' },
-  outline: { bg: colors.surface, border: colors.border, text: colors.text },
+  primary: { bg: colors.brandPrimary, border: colors.brandPrimary, text: '#FFFFFF' },
+  secondary: { bg: colors.brandAccent, border: colors.brandAccent, text: '#FFFFFF' },
+  outline: { bg: colors.bgSurface, border: '#CBD5E1', text: colors.textPrimary },
   ghost: { bg: 'transparent', border: 'transparent', text: colors.textSecondary },
   danger: { bg: colors.dangerSoft, border: colors.dangerSoft, text: colors.danger },
 };
@@ -62,18 +67,24 @@ const variantStyles = {
 const sizeStyles = {
   sm: { px: 12, py: 8, font: 13, icon: 14 },
   md: { px: 16, py: 10, font: 14, icon: 16 },
-  lg: { px: 20, py: 12, font: 15, icon: 18 },
+  lg: { px: 22, py: 14, font: 15, icon: 18 },
 };
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radii.md,
     borderWidth: 1,
-    alignSelf: 'flex-start',
+  },
+  primaryShadow: {
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 4,
   },
   row: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: spacing.sm,
   },
   label: {
