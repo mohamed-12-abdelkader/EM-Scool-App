@@ -6,12 +6,20 @@ import { apiRequest } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { arFonts, colors, radii, shadows } from '@/theme/tokens';
 
+type Doc = {
+  type?: string;
+  file_name?: string;
+  path?: string;
+  status?: string;
+};
+
 type AppRow = {
   id: string;
   applicant_full_name: string;
   status: string;
   waitlist_rank?: number | null;
   date_of_birth?: string;
+  documents?: Doc[];
 };
 
 const STATUSES = ['SUBMITTED', 'EXAM_SCHEDULED', 'WAITLISTED', 'ACCEPTED', 'ENROLLED', 'REJECTED'];
@@ -122,6 +130,58 @@ export default function AdmissionsPipeline() {
               />
             </View>
             <Text style={styles.id}>{item.id}</Text>
+
+            {(item.documents || []).length > 0 ? (
+              <View style={styles.docsBox}>
+                <Text style={styles.docsTitle}>المستندات ({item.documents!.length})</Text>
+                {item.documents!.map((doc, docIndex) => (
+                  <View key={`${item.id}-${docIndex}`} style={styles.docRow}>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={styles.docType}>{doc.type || 'مستند'}</Text>
+                      <Text style={styles.docMeta}>
+                        {doc.file_name || doc.path || '—'} · {doc.status || 'PENDING'}
+                      </Text>
+                    </View>
+                    <View style={styles.docActions}>
+                      <Button
+                        size="sm"
+                        label="قبول"
+                        disabled={busyId === item.id}
+                        onPress={() =>
+                          void run(item.id, async () => {
+                            await apiRequest(`/v1/admissions/applications/${item.id}/documents`, {
+                              method: 'PATCH',
+                              ...headers,
+                              body: { documentIndex: docIndex, status: 'APPROVED' },
+                            });
+                            notify('تم قبول المستند');
+                          })
+                        }
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        label="رفض"
+                        disabled={busyId === item.id}
+                        onPress={() =>
+                          void run(item.id, async () => {
+                            await apiRequest(`/v1/admissions/applications/${item.id}/documents`, {
+                              method: 'PATCH',
+                              ...headers,
+                              body: { documentIndex: docIndex, status: 'REJECTED_RESUBMIT' },
+                            });
+                            notify('طُلب إعادة رفع المستند');
+                          })
+                        }
+                      />
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={styles.noDocs}>لا مستندات مرفقة</Text>
+            )}
+
             <View style={styles.actions}>
               {item.status === 'SUBMITTED' ? (
                 <Button
@@ -193,7 +253,7 @@ export default function AdmissionsPipeline() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 20, backgroundColor: colors.bgCanvas, gap: 8 },
+  wrap: { flex: 1, padding: 20, paddingBottom: 100, backgroundColor: colors.bgCanvas, gap: 8 },
   h1: { fontFamily: arFonts.extraBold, fontSize: 26, color: colors.textPrimary, textAlign: 'right' },
   sub: { fontFamily: arFonts.regular, color: colors.textSecondary, marginBottom: 4, textAlign: 'right' },
   filters: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 6 },
@@ -220,6 +280,30 @@ const styles = StyleSheet.create({
   name: { fontFamily: arFonts.semiBold, fontSize: 15, color: colors.textPrimary, flex: 1, textAlign: 'right' },
   id: { fontFamily: arFonts.mono, fontSize: 11, color: colors.textMuted, textAlign: 'right' },
   actions: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
+  docsBox: {
+    backgroundColor: colors.bgCanvas,
+    borderRadius: radii.lg,
+    padding: 10,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+  },
+  docsTitle: {
+    fontFamily: arFonts.semiBold,
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'right',
+  },
+  docRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
+  },
+  docType: { fontFamily: arFonts.semiBold, fontSize: 13, color: colors.textPrimary, textAlign: 'right' },
+  docMeta: { fontFamily: arFonts.mono, fontSize: 10, color: colors.textMuted, textAlign: 'right' },
+  docActions: { flexDirection: 'row-reverse', gap: 4 },
+  noDocs: { fontFamily: arFonts.regular, fontSize: 12, color: colors.textMuted, textAlign: 'right' },
   empty: {
     fontFamily: arFonts.regular,
     color: colors.textMuted,

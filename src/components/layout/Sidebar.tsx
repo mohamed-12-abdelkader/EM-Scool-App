@@ -187,7 +187,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderLeftColor: colors.sidebarBorder,
     height: '100%',
-    direction: 'rtl',
   },
   drawerSidebar: {
     borderLeftWidth: 0,

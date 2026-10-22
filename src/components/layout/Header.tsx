@@ -141,7 +141,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     zIndex: 20,
     flexWrap: 'wrap',
-    direction: 'rtl',
   },
   headerMobile: {
     minHeight: 60,

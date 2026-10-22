@@ -61,7 +61,7 @@ export default function StudentsList() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 20, backgroundColor: colors.bgCanvas, gap: 8 },
+  wrap: { flex: 1, padding: 20, paddingBottom: 100, backgroundColor: colors.bgCanvas, gap: 8 },
   h1: { fontFamily: arFonts.extraBold, fontSize: 26, color: colors.textPrimary, textAlign: 'right' },
   sub: { fontFamily: arFonts.regular, color: colors.textSecondary, textAlign: 'right' },
   row: {

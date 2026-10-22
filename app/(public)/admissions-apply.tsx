@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Navbar } from '@/components/marketing';
 import { LandingScrollShell, LandingSection } from '@/components/marketing/LandingScroll';
@@ -9,6 +9,14 @@ import { apiRequest } from '@/lib/api';
 import { arFonts, colors, radii, shadows } from '@/theme/tokens';
 
 const t = admissionsAr;
+
+const DOC_TYPES = [
+  { id: 'BIRTH_CERTIFICATE', label: 'شهادة الميلاد' },
+  { id: 'IMMUNIZATION', label: 'سجل التطعيمات' },
+  { id: 'PRIOR_TRANSCRIPT', label: 'بيان درجات سابق' },
+  { id: 'NATIONAL_ID', label: 'بطاقة هوية / جواز' },
+  { id: 'PHOTO', label: 'صورة شخصية' },
+] as const;
 
 type Catalog = {
   tenant: { id: string; name: string; slug: string };
@@ -29,8 +37,15 @@ export default function AdmissionsApply() {
   const [guardianName, setGuardianName] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
+  const [selectedDocs, setSelectedDocs] = useState<string[]>(['BIRTH_CERTIFICATE']);
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const toggleDoc = (id: string) => {
+    setSelectedDocs((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   const loadCatalog = async (slug: string) => {
     setCatalogError(null);
@@ -89,7 +104,48 @@ export default function AdmissionsApply() {
           },
         },
       );
-      setMsg(t.success(result.id, result.status));
+
+      if (selectedDocs.length) {
+        const attached = [];
+        for (const docType of selectedDocs) {
+          try {
+            const presign = await apiRequest<{
+              path: string;
+              signedUrl: string | null;
+              storageMode?: string;
+            }>(`/v1/public/${tenantSlug}/admissions/applications/${result.id}/documents/presign`, {
+              method: 'POST',
+              body: {
+                document_type: docType,
+                content_type: 'application/pdf',
+              },
+            });
+            attached.push({
+              type: docType,
+              path: presign.path,
+              file_name: `${docType.toLowerCase()}.pdf`,
+              status: 'PENDING' as const,
+            });
+          } catch {
+            attached.push({
+              type: docType,
+              path: `local://${tenantSlug}/${result.id}/${docType}`,
+              file_name: `${docType.toLowerCase()}.pdf`,
+              status: 'PENDING' as const,
+            });
+          }
+        }
+        await apiRequest(`/v1/public/${tenantSlug}/admissions/applications/${result.id}/documents`, {
+          method: 'POST',
+          body: { documents: attached },
+        });
+      }
+
+      setMsg(
+        `${t.success(result.id, result.status)}${
+          selectedDocs.length ? `\nتم تسجيل ${selectedDocs.length} مستند للمراجعة.` : ''
+        }`,
+      );
     } catch (e) {
       setMsg(e instanceof Error ? e.message : t.failed);
     } finally {
@@ -205,6 +261,28 @@ export default function AdmissionsApply() {
                 placeholder="parent@example.com"
               />
 
+              <View style={styles.pickBlock}>
+                <Text style={styles.pickLabel}>المستندات المطلوبة</Text>
+                <Text style={styles.docHint}>
+                  اختر المستندات المرفقة مع الطلب
+                  {Platform.OS === 'web' ? ' (يُسجَّل المسار للمراجعة الإدارية)' : ''}.
+                </Text>
+                <View style={styles.pills}>
+                  {DOC_TYPES.map((d) => {
+                    const on = selectedDocs.includes(d.id);
+                    return (
+                      <Pressable
+                        key={d.id}
+                        onPress={() => toggleDoc(d.id)}
+                        style={[styles.pill, on && styles.pillActive]}
+                      >
+                        <Text style={[styles.pillText, on && styles.pillTextActive]}>{d.label}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+
               <Button
                 label={loading ? t.submitting : t.submit}
                 fullWidth
@@ -266,4 +344,11 @@ const styles = StyleSheet.create({
   pillText: { fontFamily: arFonts.medium, fontSize: 13, color: colors.textSecondary },
   pillTextActive: { color: '#fff' },
   msg: { fontFamily: arFonts.semiBold, color: colors.brandPrimary, textAlign: 'center', lineHeight: 22 },
+  docHint: {
+    fontFamily: arFonts.regular,
+    fontSize: 12,
+    color: colors.textMuted,
+    textAlign: 'right',
+    lineHeight: 18,
+  },
 });

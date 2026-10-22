@@ -131,7 +131,6 @@ const styles = StyleSheet.create({
   main: {
     flex: 1,
     minWidth: 0,
-    direction: 'rtl',
   },
   content: {
     flex: 1,
@@ -164,7 +163,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderBottomLeftRadius: 20,
     overflow: 'hidden',
-    direction: 'rtl',
     zIndex: 50,
     ...shadows.md,
   },

@@ -60,7 +60,6 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 8,
     paddingHorizontal: spacing.sm,
-    direction: 'rtl',
     ...shadows.sm,
   },
   tab: {

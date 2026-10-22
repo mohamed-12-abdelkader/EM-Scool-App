@@ -40,6 +40,7 @@ export function AnimatedPressable({
       accessibilityLabel={accessibilityLabel}
       disabled={disabled}
       onPress={onPress}
+      style={style}
       onPressIn={() => {
         if (disabled || reduced) return;
         scale.value = withSpring(MOTION.pressScale, SPRING_SNAPPY);
@@ -49,7 +50,7 @@ export function AnimatedPressable({
         scale.value = withSpring(1, SPRING_SNAPPY);
       }}
     >
-      <Animated.View style={[style, animatedStyle]}>{children}</Animated.View>
+      <Animated.View style={animatedStyle}>{children}</Animated.View>
     </Pressable>
   );
 }
