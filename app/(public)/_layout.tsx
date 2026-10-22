@@ -1,9 +1,19 @@
+import { useEffect } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
 import { colors } from '@/theme/tokens';
 
-/** Marketing surfaces — LTR English per ui.md */
+/** Public marketing — Arabic Egypt RTL via document dir (not RN `direction` style). */
 export default function PublicLayout() {
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.documentElement.setAttribute('lang', 'ar');
+      document.documentElement.setAttribute('dir', 'rtl');
+      document.body.style.direction = 'rtl';
+      document.body.style.fontFamily = 'Cairo_400Regular, "Segoe UI", Tahoma, sans-serif';
+    }
+  }, []);
+
   return (
     <View style={styles.root}>
       <Stack
@@ -19,6 +29,5 @@ export default function PublicLayout() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    direction: 'ltr',
   },
 });

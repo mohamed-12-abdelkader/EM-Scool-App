@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
 
 export default function SuperAdminLayout() {
-  return <Stack screenOptions={{ headerShown: true, title: 'Super Admin' }} />;
+  return <Stack screenOptions={{ headerShown: true, title: 'مشرف المنصة' }} />;
 }

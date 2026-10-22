@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
-import { colors, fonts, radii } from '@/theme/tokens';
+import { arFonts, colors, radii } from '@/theme/tokens';
 
 type Tone = 'indigo' | 'violet' | 'emerald' | 'amber' | 'rose' | 'slate' | 'dark';
 
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   text: {
-    fontFamily: fonts.semiBold,
+    fontFamily: arFonts.semiBold,
     fontSize: 12,
   },
 });

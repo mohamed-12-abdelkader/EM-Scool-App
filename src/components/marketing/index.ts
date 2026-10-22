@@ -7,3 +7,4 @@ export { GuideComparisonSection } from './GuideComparisonSection';
 export { IntegrationsAndFooter } from './Footer';
 export { PillBadge } from './Badge';
 export { MockWidget, MockRow } from './MockWidget';
+export { LandingScrollShell, LandingSection, useLandingScroll } from './LandingScroll';

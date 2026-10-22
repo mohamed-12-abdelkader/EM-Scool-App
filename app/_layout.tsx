@@ -45,10 +45,11 @@ export default function RootLayout() {
   useEffect(() => {
     SystemUI.setBackgroundColorAsync(colors.bgCanvas);
     if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      document.documentElement.setAttribute('lang', 'en');
-      document.documentElement.setAttribute('dir', 'ltr');
-      document.body.style.direction = 'ltr';
-      document.body.style.fontFamily = 'PlusJakartaSans_400Regular, system-ui, sans-serif';
+      // Default Egypt product: Arabic RTL (public landing owns the document dir)
+      document.documentElement.setAttribute('lang', 'ar');
+      document.documentElement.setAttribute('dir', 'rtl');
+      document.body.style.direction = 'rtl';
+      document.body.style.fontFamily = 'Cairo_400Regular, "Segoe UI", Tahoma, sans-serif';
     }
   }, []);
 
@@ -61,7 +62,7 @@ export default function RootLayout() {
       <AuthProvider>
         <ToastProvider>
           <StatusBar style="dark" />
-          <View style={{ flex: 1, direction: 'ltr' }}>
+          <View style={{ flex: 1 }}>
             <Stack
               screenOptions={{
                 headerShown: false,

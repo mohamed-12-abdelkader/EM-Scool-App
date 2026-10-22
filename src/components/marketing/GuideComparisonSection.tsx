@@ -1,55 +1,16 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { colors, fonts, radii, shadows } from '@/theme/tokens';
-
-const matrix = [
-  {
-    name: 'SIS',
-    full: 'Student Information System',
-    desc: '360° student records, family sibling graph, medical clinic log, admissions vault.',
-  },
-  {
-    name: 'LMS',
-    full: 'Learning Management System',
-    desc: 'Syllabus pacing, digital homework, student uploads, multi-scale gradebook.',
-  },
-  {
-    name: 'SMS',
-    full: 'School Management System',
-    desc: 'Biometric/RFID attendance, conflict-free timetables, parent-teacher chat, bus GPS.',
-  },
-  {
-    name: 'ERP',
-    full: 'Enterprise Resource Planning',
-    desc: 'Fee billing, payment webhooks, HR contracts, payroll, library & asset inventory.',
-  },
-];
-
-const workflows = [
-  {
-    title: 'Student Enrollment',
-    steps: 'Online Form → Entrance Exam → Waitlist → Student + Family Profile & Enrollment Invoice',
-  },
-  {
-    title: 'Daily Attendance',
-    steps: 'Mobile Roll Call / RFID → BullMQ Job → Parent Push/WhatsApp → Compliance sync',
-  },
-  {
-    title: 'Fee Collection',
-    steps: 'Bulk Invoice → Parent Pays in App → HMAC Webhook → Ledger PAID + PDF Receipt',
-  },
-];
+import { landingAr } from '@/content/landing.ar';
+import { arFonts, colors, radii, shadows } from '@/theme/tokens';
+const t = landingAr.guide;
 
 export function GuideComparisonSection() {
   return (
-    <View nativeID="guide" style={styles.wrap}>
-      <Text style={styles.h2}>The Complete 2026 Guide</Text>
-      <Text style={styles.p}>
-        Traditional vendors force schools to buy 4 separate tools. We unify SMS + SIS + LMS + ERP in one
-        PostgreSQL multi-tenant schema.
-      </Text>
+    <View style={styles.wrap}>
+      <Text style={styles.h2}>{t.title}</Text>
+      <Text style={styles.p}>{t.subtitle}</Text>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cards}>
-        {matrix.map((m) => (
+        {t.cards.map((m) => (
           <View key={m.name} style={[styles.card, shadows.card]}>
             <Text style={styles.cardName}>{m.name}</Text>
             <Text style={styles.cardFull}>{m.full}</Text>
@@ -58,9 +19,9 @@ export function GuideComparisonSection() {
         ))}
       </ScrollView>
 
-      <Text style={styles.h3}>3 live workflows</Text>
+      <Text style={styles.h3}>{t.workflowsTitle}</Text>
       <View style={styles.flowRow}>
-        {workflows.map((w, i) => (
+        {t.workflows.map((w, i) => (
           <View key={w.title} style={[styles.flow, shadows.sm]}>
             <Text style={styles.flowN}>{i + 1}</Text>
             <Text style={styles.flowTitle}>{w.title}</Text>
@@ -81,19 +42,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   h2: {
-    fontFamily: fonts.extraBold,
-    fontSize: 32,
+    fontFamily: arFonts.extraBold,
+    fontSize: 28,
     color: colors.textPrimary,
-    letterSpacing: -0.8,
     textAlign: 'center',
+    lineHeight: 40,
   },
   p: {
-    fontFamily: fonts.regular,
+    fontFamily: arFonts.regular,
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
     maxWidth: 720,
-    lineHeight: 24,
+    lineHeight: 28,
     marginBottom: 8,
   },
   cards: { gap: 12, paddingVertical: 8 },
@@ -103,18 +64,18 @@ const styles = StyleSheet.create({
     borderRadius: radii['2xl'],
     borderWidth: 1,
     borderColor: colors.borderSubtle,
-    padding: 20,
+    padding: 18,
     gap: 8,
   },
-  cardName: { fontFamily: fonts.extraBold, fontSize: 22, color: colors.brandPrimary },
-  cardFull: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.textPrimary },
-  cardDesc: { fontFamily: fonts.regular, fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  cardName: { fontFamily: arFonts.extraBold, fontSize: 20, color: colors.brandPrimary, textAlign: 'right' },
+  cardFull: { fontFamily: arFonts.semiBold, fontSize: 14, color: colors.textPrimary, textAlign: 'right' },
+  cardDesc: { fontFamily: arFonts.regular, fontSize: 13, color: colors.textSecondary, lineHeight: 22, textAlign: 'right' },
   h3: {
-    fontFamily: fonts.bold,
+    fontFamily: arFonts.bold,
     fontSize: 20,
     color: colors.textPrimary,
     marginTop: 24,
-    alignSelf: 'center',
+    textAlign: 'center',
   },
   flowRow: {
     width: '100%',
@@ -128,18 +89,19 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: 280,
     backgroundColor: colors.bgSurface,
-    borderRadius: radii['2xl'],
+    borderRadius: radii.xl,
     borderWidth: 1,
     borderColor: colors.borderSubtle,
-    padding: 20,
+    padding: 16,
     gap: 8,
   },
   flowN: {
-    fontFamily: fonts.monoMedium,
-    fontSize: 12,
+    fontFamily: arFonts.monoMedium,
+    fontSize: 18,
     color: colors.brandPrimary,
     fontVariant: ['tabular-nums'],
+    textAlign: 'right',
   },
-  flowTitle: { fontFamily: fonts.bold, fontSize: 16, color: colors.textPrimary },
-  flowSteps: { fontFamily: fonts.regular, fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
+  flowTitle: { fontFamily: arFonts.bold, fontSize: 16, color: colors.textPrimary, textAlign: 'right' },
+  flowSteps: { fontFamily: arFonts.regular, fontSize: 13, color: colors.textSecondary, lineHeight: 22, textAlign: 'right' },
 });

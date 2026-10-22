@@ -1,55 +1,65 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 import { Button } from '@/components/ui';
 import { PillBadge } from './Badge';
-import { colors, fonts } from '@/theme/tokens';
+import { landingAr } from '@/content/landing.ar';
+import { arFonts, colors, MOTION } from '@/theme/tokens';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 
-const metrics = [
-  { value: '6+', label: 'Attendance methods (Biometric, RFID, QR, NFC, Roll Call, Kiosk)' },
-  { value: '3×', label: 'Faster fee collection with automated WhatsApp & Push reminders' },
-  { value: '40%', label: 'Less weekly administrative workload across branches' },
-  { value: '100%', label: 'Parent real-time visibility across KG → Secondary' },
-];
+const t = landingAr.hero;
+
+function enter(delay: number, reduced: boolean | null | undefined) {
+  if (reduced) return undefined;
+  return FadeInDown.delay(delay).duration(500).springify();
+}
 
 export function HeroSection() {
   const { isDesktop } = useBreakpoint();
+  const reduced = useReducedMotion();
+  const [d0, d1, d2, d3, d4] = MOTION.heroStaggerMs;
 
   return (
     <View style={styles.wrap}>
       <View style={styles.inner}>
-        <PillBadge label="✦ The Unified Operating System for K–12 Schools & Multi-Branch Groups" tone="indigo" />
-        <Text style={[styles.h1, isDesktop && { fontSize: 52, lineHeight: 58 }]}>
-          Stop managing your school with spreadsheets and WhatsApp groups.
-        </Text>
-        <Text style={styles.sub}>
-          An all-in-one multi-tenant School Management System (SIS, LMS & ERP) for Kindergarten,
-          Elementary, Preparatory, and Secondary schools. Admissions, biometric/RFID attendance,
-          conflict-free timetables, multi-scale grading, online fees, HR payroll, and live bus GPS —
-          connected in one platform.
-        </Text>
-        <View style={styles.ctaRow}>
-          <Button label="Book a free demo →" size="lg" onPress={() => router.push('/(auth)/signin')} />
+        <Animated.View entering={enter(d0, reduced)}>
+          <PillBadge label={t.eyebrow} tone="indigo" />
+        </Animated.View>
+        <Animated.View entering={enter(d1, reduced)}>
+          <Text style={[styles.h1, isDesktop && { fontSize: 44, lineHeight: 56 }]}>{t.title}</Text>
+        </Animated.View>
+        <Animated.View entering={enter(d2, reduced)}>
+          <Text style={styles.sub}>{t.subtitle}</Text>
+        </Animated.View>
+        <Animated.View entering={enter(d3, reduced)} style={styles.ctaRow}>
+          <Button label={t.ctaPrimary} size="lg" onPress={() => router.push('/(auth)/signin')} />
           <Button
-            label="Sign in to Portal"
+            label={t.ctaSecondary}
             variant="outline"
             size="lg"
-            onPress={() => router.push('/(auth)/signin')}
+            onPress={() => router.push('/(public)/admissions-apply')}
           />
-        </View>
-        <Text style={styles.trust}>
-          ✓ Scales from 50 to 50,000 students · ✓ Multi-Branch Ready · ✓ No credit card required
-        </Text>
+        </Animated.View>
+        <Animated.View entering={enter(d3 + 40, reduced)}>
+          <Text style={styles.trust}>{t.trust}</Text>
+        </Animated.View>
       </View>
 
-      <View style={[styles.metrics, isDesktop && styles.metricsDesktop]}>
-        {metrics.map((m) => (
-          <View key={m.value} style={styles.metric}>
+      <Animated.View
+        entering={enter(d4, reduced)}
+        style={[styles.metrics, isDesktop && styles.metricsDesktop]}
+      >
+        {t.metrics.map((m, i) => (
+          <Animated.View
+            key={m.value + m.label}
+            entering={enter(d4 + i * MOTION.staggerMs, reduced)}
+            style={styles.metric}
+          >
             <Text style={styles.metricValue}>{m.value}</Text>
             <Text style={styles.metricLabel}>{m.label}</Text>
-          </View>
+          </Animated.View>
         ))}
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -69,28 +79,28 @@ const styles = StyleSheet.create({
     gap: 18,
   },
   h1: {
-    fontFamily: fonts.extraBold,
-    fontSize: 36,
-    lineHeight: 42,
+    fontFamily: arFonts.extraBold,
+    fontSize: 32,
+    lineHeight: 44,
     color: colors.textPrimary,
     textAlign: 'center',
-    letterSpacing: -1.2,
   },
   sub: {
-    fontFamily: fonts.regular,
+    fontFamily: arFonts.regular,
     fontSize: 17,
-    lineHeight: 28,
+    lineHeight: 30,
     color: colors.textSecondary,
     textAlign: 'center',
     maxWidth: 720,
   },
-  ctaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 4 },
+  ctaRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 4 },
   trust: {
-    fontFamily: fonts.medium,
+    fontFamily: arFonts.medium,
     fontSize: 13,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: 4,
+    lineHeight: 22,
   },
   metrics: {
     marginTop: 40,
@@ -110,10 +120,17 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   metricValue: {
-    fontFamily: fonts.monoMedium,
+    fontFamily: arFonts.monoMedium,
     fontSize: 28,
     color: colors.brandPrimary,
     fontVariant: ['tabular-nums'],
+    textAlign: 'right',
   },
-  metricLabel: { fontFamily: fonts.regular, fontSize: 13, color: colors.textSecondary, lineHeight: 18 },
+  metricLabel: {
+    fontFamily: arFonts.regular,
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    textAlign: 'right',
+  },
 });

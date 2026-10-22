@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { colors, fonts, radii, spacing } from '@/theme/tokens';
+import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { arFonts, colors, radii, spacing } from '@/theme/tokens';
+import { AnimatedPressable } from './AnimatedPressable';
 import { Icon } from './Icon';
 
 type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
@@ -30,15 +31,15 @@ export function Button({
   const sizing = sizeStyles[size];
 
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [
+      style={[
         styles.base,
         {
           backgroundColor: tone.bg,
           borderColor: tone.border,
-          opacity: disabled ? 0.5 : pressed ? 0.88 : 1,
+          opacity: disabled ? 0.5 : 1,
           paddingHorizontal: sizing.px,
           paddingVertical: sizing.py,
           borderRadius: radii.xl,
@@ -52,7 +53,7 @@ export function Button({
         {icon ? <Icon name={icon} size={sizing.icon} color={tone.text} /> : null}
         <Text style={[styles.label, { color: tone.text, fontSize: sizing.font }]}>{label}</Text>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
@@ -88,6 +89,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   label: {
-    fontFamily: fonts.semiBold,
+    fontFamily: arFonts.semiBold,
   },
 });

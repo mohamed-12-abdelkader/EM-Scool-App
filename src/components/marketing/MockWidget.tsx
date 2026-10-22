@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, fonts, radii, shadows } from '@/theme/tokens';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
+import { LivePulseDot } from '@/components/ui/LivePulseDot';
+import { arFonts, colors, MOTION, radii, shadows } from '@/theme/tokens';
 
 type Kpi = { value: string; label: string };
 
@@ -11,6 +13,7 @@ export function MockWidget({
   footer,
   children,
   dark = false,
+  contentKey,
 }: {
   title: string;
   live?: boolean;
@@ -18,6 +21,8 @@ export function MockWidget({
   footer?: string;
   children: ReactNode;
   dark?: boolean;
+  /** Remount key so staggered row entrances replay on tab/role change */
+  contentKey?: string;
 }) {
   return (
     <View
@@ -31,7 +36,7 @@ export function MockWidget({
     >
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          {live ? <View style={styles.pulse} /> : null}
+          {live ? <LivePulseDot /> : null}
           <Text style={[styles.title, dark && { color: colors.textOnDark }]} numberOfLines={1}>
             {title}
           </Text>
@@ -39,7 +44,10 @@ export function MockWidget({
         {kpis?.length ? (
           <View style={styles.kpiRow}>
             {kpis.map((k) => (
-              <View key={k.label} style={styles.kpi}>
+              <View
+                key={k.label}
+                style={[styles.kpi, dark && { backgroundColor: 'rgba(15,23,42,0.55)' }]}
+              >
                 <Text style={[styles.kpiValue, dark && { color: '#A5B4FC' }]}>{k.value}</Text>
                 <Text style={[styles.kpiLabel, dark && { color: colors.textOnDarkMuted }]}>
                   {k.label}
@@ -49,7 +57,9 @@ export function MockWidget({
           </View>
         ) : null}
       </View>
-      <View style={styles.body}>{children}</View>
+      <View key={contentKey} style={styles.body}>
+        {children}
+      </View>
       {footer ? (
         <View style={[styles.footer, dark && { borderTopColor: colors.borderDark }]}>
           <Text style={[styles.footerText, dark && { color: colors.textOnDarkMuted }]}>{footer}</Text>
@@ -64,14 +74,27 @@ export function MockRow({
   subtitle,
   right,
   dark = false,
+  index = 0,
 }: {
   title: string;
   subtitle?: string;
   right: ReactNode;
   dark?: boolean;
+  index?: number;
 }) {
+  const reduced = useReducedMotion();
+
   return (
-    <View style={[styles.row, dark && { borderBottomColor: colors.borderDark }]}>
+    <Animated.View
+      entering={
+        reduced
+          ? undefined
+          : FadeInDown.delay(index * MOTION.staggerMs)
+              .duration(400)
+              .springify()
+      }
+      style={[styles.row, dark && { borderBottomColor: colors.borderDark }]}
+    >
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[styles.rowTitle, dark && { color: colors.textOnDark }]}>{title}</Text>
         {subtitle ? (
@@ -79,7 +102,7 @@ export function MockRow({
         ) : null}
       </View>
       {right}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -93,14 +116,8 @@ const styles = StyleSheet.create({
   },
   header: { padding: 16, gap: 12 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  pulse: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.statusSuccess,
-  },
   title: {
-    fontFamily: fonts.semiBold,
+    fontFamily: arFonts.semiBold,
     fontSize: 14,
     color: colors.textPrimary,
     flex: 1,
@@ -114,13 +131,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   kpiValue: {
-    fontFamily: fonts.monoMedium,
+    fontFamily: arFonts.monoMedium,
     fontSize: 16,
     color: colors.textPrimary,
     fontVariant: ['tabular-nums'],
   },
   kpiLabel: {
-    fontFamily: fonts.medium,
+    fontFamily: arFonts.medium,
     fontSize: 11,
     color: colors.textMuted,
     marginTop: 2,
@@ -134,7 +151,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(248,250,252,0.8)',
   },
   footerText: {
-    fontFamily: fonts.medium,
+    fontFamily: arFonts.medium,
     fontSize: 12,
     color: colors.textSecondary,
   },
@@ -146,6 +163,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.borderSubtle,
   },
-  rowTitle: { fontFamily: fonts.semiBold, fontSize: 14, color: colors.textPrimary },
-  rowSub: { fontFamily: fonts.regular, fontSize: 12, color: colors.textMuted },
+  rowTitle: { fontFamily: arFonts.semiBold, fontSize: 14, color: colors.textPrimary },
+  rowSub: { fontFamily: arFonts.regular, fontSize: 12, color: colors.textMuted },
 });

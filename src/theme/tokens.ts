@@ -131,6 +131,41 @@ export const fonts = {
 export const brand = {
   name: 'Clast',
   wordmark: 'Clast',
-  badge: 'K-12 OS',
-  tagline: 'The Unified Operating System for K–12 Schools',
+  badge: 'مدارس K-12',
+  tagline: 'منصة مدارس متعددة المستأجرين للمدارس في مصر',
+} as const;
+
+/** Prefer Cairo on Arabic marketing / RTL surfaces */
+export const arFonts = {
+  regular: fonts.arabicRegular,
+  medium: fonts.arabicMedium,
+  semiBold: fonts.arabicSemiBold,
+  bold: fonts.arabicBold,
+  extraBold: fonts.arabicBold,
+  mono: fonts.mono,
+  monoMedium: fonts.monoMedium,
+} as const;
+
+/** Reanimated spring presets — clast_io_ui_design_system.md §5.1 */
+export const SPRING_SNAPPY = {
+  damping: 18,
+  stiffness: 180,
+  mass: 0.8,
+} as const;
+
+export const SPRING_GENTLE = {
+  damping: 22,
+  stiffness: 120,
+  mass: 1,
+} as const;
+
+export const MOTION = {
+  pressScale: 0.97,
+  progressMs: 750,
+  staggerMs: 70,
+  tabEnterMs: 280,
+  heroStaggerMs: [0, 80, 160, 240, 320] as const,
+  levitateMs: 4000,
+  levitateOffsetY: -8,
+  levitatePhaseMs: 1500,
 } as const;

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { colors, fonts, radii, spacing } from '@/theme/tokens';
+import { arFonts, colors, radii, spacing } from '@/theme/tokens';
 import { Icon } from './Icon';
 
 interface InputProps extends TextInputProps {
@@ -30,12 +30,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   label: {
-    fontFamily: fonts.semiBold,
+    fontFamily: arFonts.semiBold,
     fontSize: 13,
     color: colors.textPrimary,
+    textAlign: 'right',
   },
   field: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: spacing.sm,
     borderWidth: 1,
@@ -50,14 +51,17 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: fonts.regular,
+    fontFamily: arFonts.regular,
     fontSize: 14,
     color: colors.textPrimary,
     paddingVertical: 10,
+    textAlign: 'right',
   },
   error: {
-    fontFamily: fonts.medium,
+    fontFamily: arFonts.medium,
     fontSize: 12,
     color: colors.statusDanger,
+    textAlign: 'right',
   },
 });
+
