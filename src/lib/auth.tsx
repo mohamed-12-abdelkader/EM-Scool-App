@@ -20,8 +20,7 @@ type AuthState = {
   login: (
     identifier: string,
     password: string,
-    tenantId?: string,
-    phone?: string,
+    options?: { tenantId?: string; phone?: string; role?: string },
   ) => Promise<AuthUser>;
   logout: () => Promise<void>;
   ready: boolean;
@@ -77,9 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         void persist({ user, accessToken, refreshToken, activeChildId: id });
       },
       ready,
-      login: async (identifier, password, tenantId, phone) => {
-        const body: Record<string, unknown> = { password, tenantId };
-        if (phone) body.phone = phone;
+      login: async (identifier, password, options) => {
+        const body: Record<string, unknown> = { password };
+        if (options?.tenantId) body.tenantId = options.tenantId;
+        if (options?.role) body.role = options.role;
+        if (options?.phone) body.phone = options.phone;
         else if (identifier.includes('@')) body.email = identifier;
         else body.phone = identifier;
 
@@ -129,7 +130,8 @@ export function roleHome(role: string) {
     case 'ADMISSIONS_OFFICER':
     case 'ACADEMIC_COORDINATOR':
     case 'FINANCE_MANAGER':
-      return '/(school-admin)';
+      /** Unified ERP shell: Phase 1 SIS + timetable + fees product */
+      return '/(dashboard)';
     case 'TEACHER':
       return '/(teacher)';
     case 'PARENT':

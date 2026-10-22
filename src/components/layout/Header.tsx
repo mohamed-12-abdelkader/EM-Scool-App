@@ -1,25 +1,35 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { colors, fonts, radii, shadows, spacing } from '@/theme/tokens';
-import { academicYears, currentUser, schoolName } from '@/navigation/navConfig';
-import { Avatar, Icon, Input } from '@/components/ui';
-import { notifications } from '@/data/mock';
+import { arFonts, brand, colors, radii, shadows, spacing } from '@/theme/tokens';
+import { academicYears } from '@/navigation/navConfig';
+import { Avatar, Icon } from '@/components/ui';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useAuth } from '@/lib/auth';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
   onOpenMobileNav: () => void;
 }
 
+const roleLabel: Record<string, string> = {
+  SCHOOL_ADMIN: 'مدير المدرسة',
+  FINANCE_MANAGER: 'مدير المالية',
+  ACADEMIC_COORDINATOR: 'منسق أكاديمي',
+  ADMISSIONS_OFFICER: 'مسؤول القبول',
+  GROUP_EXECUTIVE: 'إدارة المجموعة',
+};
+
 export function Header({ onToggleSidebar, onOpenMobileNav }: HeaderProps) {
   const { isMobile, isCompact } = useBreakpoint();
   const router = useRouter();
+  const { user, logout } = useAuth();
   const [year, setYear] = useState(academicYears[0]);
   const [yearOpen, setYearOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const unread = notifications.filter((n) => n.unread).length;
+
+  const displayName = user?.full_name || 'مستخدم النظام';
+  const displayRole = (user?.role && roleLabel[user.role]) || 'إدارة المدرسة';
 
   return (
     <View style={[styles.header, isMobile && styles.headerMobile]}>
@@ -28,37 +38,27 @@ export function Header({ onToggleSidebar, onOpenMobileNav }: HeaderProps) {
           onPress={isCompact ? onOpenMobileNav : onToggleSidebar}
           style={styles.iconBtn}
           hitSlop={8}
+          accessibilityLabel="القائمة"
         >
-          <Icon name="Menu" size={20} color={colors.text} />
+          <Icon name="Menu" size={20} color={colors.textPrimary} />
         </Pressable>
 
-        {isMobile ? (
-          <View style={styles.mobileBrand}>
-            <Text style={styles.mobileSchool} numberOfLines={1}>
-              {schoolName}
+        <View style={styles.brandBlock}>
+          <Text style={styles.brand}>{brand.wordmark}</Text>
+          {!isMobile ? (
+            <Text style={styles.greeting} numberOfLines={1}>
+              مرحباً، {displayName.split(' ')[0]}
             </Text>
-            <Text style={styles.mobileYear}>{year}</Text>
-          </View>
-        ) : (
-          <View style={styles.searchWrap}>
-            <Input placeholder="بحث شامل في النظام..." icon="Search" />
-          </View>
-        )}
+          ) : null}
+        </View>
       </View>
 
       <View style={styles.left}>
-        {isMobile ? (
-          <Pressable onPress={() => setSearchOpen((v) => !v)} style={styles.iconBtn}>
-            <Icon name="Search" size={18} color={colors.text} />
-          </Pressable>
-        ) : null}
-
         {!isMobile ? (
           <View>
             <Pressable onPress={() => setYearOpen((v) => !v)} style={styles.yearBtn}>
-              <Icon name="CalendarRange" size={16} color={colors.primary} />
               <Text style={styles.yearText}>{year}</Text>
-              <Icon name="ChevronDown" size={14} color={colors.textSecondary} />
+              <Icon name="ChevronDown" size={14} color={colors.textMuted} />
             </Pressable>
             {yearOpen ? (
               <View style={styles.dropdown}>
@@ -79,60 +79,51 @@ export function Header({ onToggleSidebar, onOpenMobileNav }: HeaderProps) {
           </View>
         ) : null}
 
-        <Pressable style={styles.iconBtn} onPress={() => router.push('/notifications')}>
-          <Icon name="Bell" size={18} color={colors.text} />
-          {unread > 0 ? (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{unread}</Text>
-            </View>
-          ) : null}
-        </Pressable>
-
-        {!isMobile ? (
-          <Pressable style={[styles.iconBtn, styles.quick]} onPress={() => router.push('/students/create')}>
-            <Icon name="Plus" size={16} color="#fff" />
-          </Pressable>
-        ) : null}
-
         <View>
           <Pressable onPress={() => setProfileOpen((v) => !v)} style={styles.profile}>
-            <Avatar name={currentUser.name} color={colors.primary} size={isMobile ? 34 : 36} />
+            <Avatar name={displayName} color={colors.brandPrimary} size={isMobile ? 34 : 36} />
             {!isMobile ? (
               <View>
-                <Text style={styles.userName}>{currentUser.name}</Text>
-                <Text style={styles.userRole}>{currentUser.role}</Text>
+                <Text style={styles.userName}>{displayName}</Text>
+                <Text style={styles.userRole}>{displayRole}</Text>
               </View>
             ) : null}
           </Pressable>
           {profileOpen ? (
             <View style={[styles.dropdown, styles.profileMenu]}>
-              <Text style={styles.menuTitle}>{schoolName}</Text>
-              <Text style={styles.dropdownText}>{currentUser.email}</Text>
-              <View style={styles.divider} />
-              <Pressable onPress={() => { setProfileOpen(false); router.push('/settings'); }}>
+              <Pressable
+                onPress={() => {
+                  setProfileOpen(false);
+                  router.push('/settings');
+                }}
+              >
                 <Text style={styles.dropdownText}>الإعدادات</Text>
               </Pressable>
-              <Text style={[styles.dropdownText, { color: colors.danger }]}>تسجيل الخروج</Text>
+              <Pressable
+                onPress={() => {
+                  setProfileOpen(false);
+                  void (async () => {
+                    await logout();
+                    router.replace('/(auth)/signin' as never);
+                  })();
+                }}
+              >
+                <Text style={[styles.dropdownText, { color: colors.statusDanger }]}>تسجيل الخروج</Text>
+              </Pressable>
             </View>
           ) : null}
         </View>
       </View>
-
-      {isMobile && searchOpen ? (
-        <View style={styles.mobileSearch}>
-          <Input placeholder="ابحث عن طالب، مدرس، فاتورة..." icon="Search" autoFocus />
-        </View>
-      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    minHeight: 72,
-    backgroundColor: colors.surface,
+    minHeight: 64,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderSubtle,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.sm,
     flexDirection: 'row-reverse',
@@ -140,16 +131,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
     zIndex: 20,
-    flexWrap: 'wrap',
   },
   headerMobile: {
-    minHeight: 60,
+    minHeight: 56,
     paddingHorizontal: spacing.md,
   },
   right: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
     flex: 1,
     minWidth: 0,
   },
@@ -158,87 +148,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
   },
-  mobileBrand: {
-    flex: 1,
-    minWidth: 0,
-    gap: 1,
-  },
-  mobileSchool: {
-    fontFamily: fonts.bold,
-    fontSize: 14,
-    color: colors.text,
+  brandBlock: { gap: 2, flex: 1, minWidth: 0 },
+  brand: {
+    fontFamily: arFonts.bold,
+    fontSize: 18,
+    color: colors.brandPrimary,
     textAlign: 'right',
   },
-  mobileYear: {
-    fontFamily: fonts.medium,
-    fontSize: 11,
-    color: colors.primary,
+  greeting: {
+    fontFamily: arFonts.regular,
+    fontSize: 12,
+    color: colors.textMuted,
     textAlign: 'right',
-  },
-  searchWrap: {
-    flex: 1,
-    maxWidth: 420,
-  },
-  mobileSearch: {
-    width: '100%',
-    paddingTop: spacing.sm,
   },
   iconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: radii.md,
+    width: 40,
+    height: 40,
+    borderRadius: radii.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderSubtle,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
-  quick: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary,
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    left: -4,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: colors.danger,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontFamily: fonts.bold,
+    backgroundColor: colors.bgSurface,
   },
   yearBtn: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    paddingHorizontal: 12,
-    height: 40,
-    backgroundColor: colors.primarySoft,
+    borderColor: colors.borderSubtle,
+    borderRadius: radii.full,
+    paddingHorizontal: 14,
+    height: 36,
+    backgroundColor: colors.bgCanvas,
   },
   yearText: {
-    fontFamily: fonts.semiBold,
-    fontSize: 13,
-    color: colors.text,
+    fontFamily: arFonts.semiBold,
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontVariant: ['tabular-nums'],
   },
   dropdown: {
     position: 'absolute',
-    top: 48,
+    top: 44,
     right: 0,
-    minWidth: 180,
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
+    minWidth: 160,
+    backgroundColor: colors.bgSurface,
+    borderRadius: radii.xl,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderSubtle,
     padding: spacing.sm,
     ...shadows.md,
     zIndex: 50,
@@ -246,17 +204,17 @@ const styles = StyleSheet.create({
   profileMenu: {
     left: 0,
     right: undefined,
-    minWidth: 220,
+    minWidth: 180,
   },
   dropdownItem: {
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: radii.sm,
+    borderRadius: radii.md,
   },
   dropdownText: {
-    fontFamily: fonts.medium,
+    fontFamily: arFonts.medium,
     fontSize: 13,
-    color: colors.text,
+    color: colors.textPrimary,
     textAlign: 'right',
     paddingVertical: 8,
     paddingHorizontal: 8,
@@ -268,28 +226,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   userName: {
-    fontFamily: fonts.semiBold,
+    fontFamily: arFonts.semiBold,
     fontSize: 13,
-    color: colors.text,
+    color: colors.textPrimary,
     textAlign: 'right',
   },
   userRole: {
-    fontFamily: fonts.regular,
+    fontFamily: arFonts.regular,
     fontSize: 11,
-    color: colors.textSecondary,
+    color: colors.textMuted,
     textAlign: 'right',
-  },
-  menuTitle: {
-    fontFamily: fonts.bold,
-    fontSize: 13,
-    color: colors.text,
-    textAlign: 'right',
-    paddingHorizontal: 8,
-    paddingTop: 4,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 6,
   },
 });

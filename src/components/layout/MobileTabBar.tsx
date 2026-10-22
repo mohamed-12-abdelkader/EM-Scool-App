@@ -1,14 +1,15 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
-import { colors, fonts, shadows, spacing } from '@/theme/tokens';
+import { arFonts, colors, radii, shadows, spacing } from '@/theme/tokens';
 import { Icon } from '@/components/ui';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 
 const tabs = [
-  { label: 'الرئيسية', href: '/', icon: 'LayoutDashboard' },
-  { label: 'الطلاب', href: '/students', icon: 'GraduationCap' },
-  { label: 'الحضور', href: '/attendance', icon: 'ClipboardCheck' },
-  { label: 'المالية', href: '/finance', icon: 'Wallet' },
-  { label: 'المزيد', href: '__more__', icon: 'Menu' },
+  { label: 'الرئيسية', href: '/', icon: 'LayoutDashboard' as const },
+  { label: 'الرسوم', href: '/finance', icon: 'Wallet' as const },
+  { label: 'الجدول', href: '/timetable', icon: 'CalendarClock' as const },
+  { label: 'الطلاب', href: '/students', icon: 'GraduationCap' as const },
+  { label: 'المزيد', href: '__more__', icon: 'Menu' as const },
 ];
 
 interface MobileTabBarProps {
@@ -29,7 +30,7 @@ export function MobileTabBar({ onOpenMore }: MobileTabBarProps) {
               ? false
               : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
         return (
-          <Pressable
+          <AnimatedPressable
             key={tab.href}
             style={styles.tab}
             onPress={() => {
@@ -39,12 +40,17 @@ export function MobileTabBar({ onOpenMore }: MobileTabBarProps) {
               }
               router.push(tab.href as never);
             }}
+            accessibilityLabel={tab.label}
           >
             <View style={[styles.iconWrap, active && styles.iconActive]}>
-              <Icon name={tab.icon} size={20} color={active ? colors.primary : colors.textMuted} />
+              <Icon
+                name={tab.icon}
+                size={20}
+                color={active ? colors.brandPrimary : colors.textMuted}
+              />
             </View>
             <Text style={[styles.label, active && styles.labelActive]}>{tab.label}</Text>
-          </Pressable>
+          </AnimatedPressable>
         );
       })}
     </View>
@@ -54,9 +60,9 @@ export function MobileTabBar({ onOpenMore }: MobileTabBarProps) {
 const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row-reverse',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bgSurface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.borderSubtle,
     paddingTop: 6,
     paddingBottom: 8,
     paddingHorizontal: spacing.sm,
@@ -74,18 +80,18 @@ const styles = StyleSheet.create({
     height: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 10,
+    borderRadius: radii.md,
   },
   iconActive: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.brandSoft,
   },
   label: {
-    fontFamily: fonts.medium,
+    fontFamily: arFonts.medium,
     fontSize: 11,
     color: colors.textMuted,
   },
   labelActive: {
-    color: colors.primary,
-    fontFamily: fonts.semiBold,
+    color: colors.brandPrimary,
+    fontFamily: arFonts.semiBold,
   },
 });

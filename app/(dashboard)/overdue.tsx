@@ -1,12 +1,6 @@
-import { ModuleListPage } from '@/components/modules/ModuleListPage';
+import { Redirect } from 'expo-router';
 
-export default function Page() {
-  return (
-    <ModuleListPage
-      title="المتأخرات والمستحقات"
-      subtitle="قوائم المتابعة للأقساط المتأخرة"
-      group="المالية والحسابات"
-      type="overdue"
-    />
-  );
+/** Overdue installments — filtered list in installments module */
+export default function OverdueRedirect() {
+  return <Redirect href="/installments" />;
 }

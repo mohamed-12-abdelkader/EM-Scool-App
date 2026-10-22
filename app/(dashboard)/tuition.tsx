@@ -1,13 +1,6 @@
-import { ModuleListPage } from '@/components/modules/ModuleListPage';
+import { Redirect } from 'expo-router';
 
-export default function Page() {
-  return (
-    <ModuleListPage
-      title="المصروفات الدراسية"
-      subtitle="تعريف الرسوم حسب الصف والعام"
-      group="المالية والحسابات"
-      type="generic"
-      entity="خطط الرسوم"
-    />
-  );
+/** Tuition product lives in the finance hub */
+export default function TuitionRedirect() {
+  return <Redirect href="/finance" />;
 }

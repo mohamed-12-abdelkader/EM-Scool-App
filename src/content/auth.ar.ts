@@ -1,12 +1,20 @@
 /** Arabic copy for sign-in / login (ar-EG) */
 
+export type DemoLogin = {
+  label: string;
+  email: string;
+  password: string;
+  role?: string;
+  tenantSlug?: string;
+};
+
 export const authAr = {
   back: 'العودة للموقع',
   brandSub: 'سجّل الدخول إلى بوابة مدرستك',
   tenantLabel: 'كود المدرسة أو النطاق الفرعي',
-  tenantPlaceholder: 'مثال: al-amal-schools',
+  tenantPlaceholder: 'مثال: demo-school',
   identifierLabel: 'البريد أو كود الطالب أو رقم الهاتف',
-  identifierPlaceholder: 'name@school.edu.eg أو STU-2026-001',
+  identifierPlaceholder: 'admin@demo-school.local',
   password: 'كلمة المرور',
   forgot: 'نسيت كلمة المرور؟',
   showPassword: 'إظهار كلمة المرور',
@@ -20,14 +28,35 @@ export const authAr = {
   secure: 'بيانات كل مدرسة معزولة. الدخول حسب الدور والصلاحيات.',
   roleTabs: ['طاقم / إدارة', 'معلم', 'ولي أمر', 'طالب'] as const,
   demoLogins: [
-    { label: 'مشرف المنصة', email: 'admin@emschool.local', password: 'admin123456' },
-    { label: 'إدارة المدرسة', email: 'admin@emschool.local', password: 'admin123456' },
-    { label: 'القبول', email: 'admin@emschool.local', password: 'admin123456' },
-    { label: 'المالية', email: 'admin@emschool.local', password: 'admin123456' },
-    { label: 'معلم', email: 'admin@emschool.local', password: 'admin123456' },
-    { label: 'ولي أمر', email: 'admin@emschool.local', password: 'admin123456' },
-    { label: 'طالب', email: 'admin@emschool.local', password: 'admin123456' },
-  ],
+    {
+      label: 'مشرف المنصة',
+      email: 'admin@emschool.local',
+      password: 'admin123456',
+      role: 'PLATFORM_SUPER_ADMIN',
+      tenantSlug: '',
+    },
+    {
+      label: 'إدارة المدرسة',
+      email: 'admin@demo-school.local',
+      password: 'admin123456',
+      role: 'SCHOOL_ADMIN',
+      tenantSlug: 'demo-school',
+    },
+    {
+      label: 'معلم',
+      email: 'teacher@demo-school.local',
+      password: 'admin123456',
+      role: 'TEACHER',
+      tenantSlug: 'demo-school',
+    },
+    {
+      label: 'ولي أمر',
+      email: 'parent-demo-1792688052@example.com',
+      password: 'admin123456',
+      role: 'PARENT',
+      tenantSlug: 'demo-school',
+    },
+  ] satisfies DemoLogin[],
   showcaseBadge: 'منصة مدارس متعددة المستأجرين',
   showcaseTitle: 'من قبول الطالب حتى متابعة الحضور والرسوم — في بوابة واحدة',
   floatTitle: 'معاينة تشغيل المدرسة',

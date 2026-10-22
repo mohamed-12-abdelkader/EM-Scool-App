@@ -22,12 +22,20 @@ import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { LevitatingView } from '@/components/ui/LevitatingView';
 import { PillBadge } from '@/components/marketing';
 import { MockWidget, MockRow } from '@/components/marketing/MockWidget';
-import { authAr } from '@/content/auth.ar';
+import { authAr, type DemoLogin } from '@/content/auth.ar';
+import { apiRequest } from '@/lib/api';
 import { roleHome, useAuth } from '@/lib/auth';
 import { arFonts, brand, colors, MOTION, radii, shadows, SPRING_SNAPPY } from '@/theme/tokens';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 
 const t = authAr;
+
+const tabRole: Record<(typeof t.roleTabs)[number], string | undefined> = {
+  'طاقم / إدارة': 'SCHOOL_ADMIN',
+  معلم: 'TEACHER',
+  'ولي أمر': 'PARENT',
+  طالب: 'STUDENT',
+};
 
 export default function SignInPage() {
   const { login } = useAuth();
@@ -35,8 +43,9 @@ export default function SignInPage() {
   const reduced = useReducedMotion();
   const [roleTab, setRoleTab] = useState<(typeof t.roleTabs)[number]>(t.roleTabs[0]);
   const [tenantSlug, setTenantSlug] = useState('demo-school');
-  const [identifier, setIdentifier] = useState('admin@emschool.local');
+  const [identifier, setIdentifier] = useState('admin@demo-school.local');
   const [password, setPassword] = useState('admin123456');
+  const [preferredRole, setPreferredRole] = useState<string | undefined>('SCHOOL_ADMIN');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [demoOpen, setDemoOpen] = useState(true);
@@ -55,9 +64,15 @@ export default function SignInPage() {
     transform: [{ scale: ctaScale.value }],
   }));
 
-  const playDemoFill = (email: string, pass: string) => {
-    setIdentifier(email);
-    setPassword(pass);
+  const playDemoFill = (demo: DemoLogin) => {
+    setIdentifier(demo.email);
+    setPassword(demo.password);
+    setPreferredRole(demo.role);
+    if (demo.tenantSlug !== undefined) setTenantSlug(demo.tenantSlug);
+    if (demo.role === 'TEACHER') setRoleTab('معلم');
+    else if (demo.role === 'PARENT') setRoleTab('ولي أمر');
+    else if (demo.role === 'STUDENT') setRoleTab('طالب');
+    else setRoleTab('طاقم / إدارة');
     if (reduced) return;
     flash.value = withSequence(withTiming(1, { duration: 120 }), withTiming(0, { duration: 420 }));
     ctaScale.value = withSequence(withSpring(1.03, SPRING_SNAPPY), withSpring(1, SPRING_SNAPPY));
@@ -65,13 +80,38 @@ export default function SignInPage() {
 
   const isEmail = useMemo(() => identifier.includes('@'), [identifier]);
   void isEmail;
-  void tenantSlug;
+
+  const resolveTenantId = async (slug: string) => {
+    const clean = slug.trim().toLowerCase();
+    if (!clean) return undefined;
+    const catalog = await apiRequest<{ tenant: { id: string } }>(
+      `/v1/public/${encodeURIComponent(clean)}/catalog`,
+    );
+    return catalog.tenant?.id;
+  };
 
   const onSubmit = async () => {
     setLoading(true);
     setError(null);
     try {
-      const user = await login(identifier.trim(), password);
+      const role =
+        preferredRole === 'PLATFORM_SUPER_ADMIN'
+          ? 'PLATFORM_SUPER_ADMIN'
+          : preferredRole || tabRole[roleTab];
+
+      let tenantId: string | undefined;
+      if (role !== 'PLATFORM_SUPER_ADMIN' && tenantSlug.trim()) {
+        try {
+          tenantId = await resolveTenantId(tenantSlug);
+        } catch {
+          /* school-scoped emails still work without tenant id */
+        }
+      }
+
+      const user = await login(identifier.trim(), password, {
+        tenantId,
+        role: role || undefined,
+      });
       router.replace(roleHome(user.role) as never);
     } catch (e) {
       setError(e instanceof Error ? e.message : t.failed);
@@ -109,7 +149,10 @@ export default function SignInPage() {
         {t.roleTabs.map((tab) => (
           <AnimatedPressable
             key={tab}
-            onPress={() => setRoleTab(tab)}
+            onPress={() => {
+              setRoleTab(tab);
+              setPreferredRole(tabRole[tab]);
+            }}
             style={[styles.roleTab, roleTab === tab && styles.roleTabActive]}
           >
             <Text style={[styles.roleTabText, roleTab === tab && styles.roleTabTextActive]}>{tab}</Text>
@@ -181,7 +224,7 @@ export default function SignInPage() {
               <AnimatedPressable
                 key={d.label}
                 style={styles.demoPill}
-                onPress={() => playDemoFill(d.email, d.password)}
+                onPress={() => playDemoFill(d)}
               >
                 <Text style={styles.demoPillText}>{d.label}</Text>
               </AnimatedPressable>

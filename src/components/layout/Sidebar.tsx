@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
-import { colors, fonts, radii, spacing } from '@/theme/tokens';
-import { currentUser, navGroups, schoolName } from '@/navigation/navConfig';
+import { arFonts, brand, colors, radii, spacing } from '@/theme/tokens';
+import { navGroups } from '@/navigation/navConfig';
 import { Avatar, Icon } from '@/components/ui';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useAuth } from '@/lib/auth';
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -21,12 +23,13 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useAuth();
   const { isDesktop } = useBreakpoint();
   const isDrawer = variant === 'drawer' || forceExpanded;
   const showLabels = isDrawer || (!collapsed && isDesktop);
   const [query, setQuery] = useState('');
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(navGroups.map((g, i) => [g.title, i < 2])),
+    Object.fromEntries(navGroups.map((g, i) => [g.title, i === 0])),
   );
 
   const activeHref = useMemo(() => {
@@ -47,6 +50,8 @@ export function Sidebar({
       .filter((group) => group.items.length > 0);
   }, [query]);
 
+  const displayName = user?.full_name || 'مدير المدرسة';
+
   return (
     <View
       style={[
@@ -57,14 +62,12 @@ export function Sidebar({
     >
       <View style={styles.brand}>
         <View style={styles.logo}>
-          <Text style={styles.logoText}>EM</Text>
+          <Text style={styles.logoText}>C</Text>
         </View>
         {showLabels ? (
           <View style={styles.brandText}>
-            <Text style={styles.brandTitle} numberOfLines={1}>
-              {schoolName}
-            </Text>
-            <Text style={styles.brandSub}>لوحة الإدارة المدرسية</Text>
+            <Text style={styles.brandTitle}>{brand.wordmark}</Text>
+            <Text style={styles.brandSub}>إدارة المدرسة</Text>
           </View>
         ) : null}
       </View>
@@ -72,12 +75,12 @@ export function Sidebar({
       {showLabels ? (
         <View style={styles.searchBox}>
           <View style={styles.searchField}>
-            <Icon name="Search" size={16} color={colors.sidebarTextMuted} />
+            <Icon name="Search" size={15} color={colors.textMuted} />
             <TextInput
               value={query}
               onChangeText={setQuery}
-              placeholder="بحث في القائمة..."
-              placeholderTextColor={colors.sidebarTextMuted}
+              placeholder="بحث سريع..."
+              placeholderTextColor={colors.textMuted}
               style={styles.searchInput}
             />
           </View>
@@ -90,25 +93,23 @@ export function Sidebar({
         showsVerticalScrollIndicator={false}
       >
         {filteredGroups.map((group) => {
-          const open = query ? true : (openGroups[group.title] ?? true);
+          const open = query ? true : (openGroups[group.title] ?? false);
           return (
             <View key={group.title} style={styles.group}>
               {showLabels ? (
-                <Pressable
+                <AnimatedPressable
                   onPress={() =>
                     setOpenGroups((prev) => ({ ...prev, [group.title]: !prev[group.title] }))
                   }
                   style={styles.groupHeader}
                 >
                   <Text style={styles.groupTitle}>{group.title}</Text>
-                  <View style={styles.groupChevron}>
-                    <Icon
-                      name={open ? 'ChevronDown' : 'ChevronLeft'}
-                      size={14}
-                      color={colors.sidebarTextMuted}
-                    />
-                  </View>
-                </Pressable>
+                  <Icon
+                    name={open ? 'ChevronDown' : 'ChevronLeft'}
+                    size={14}
+                    color={colors.textMuted}
+                  />
+                </AnimatedPressable>
               ) : null}
 
               {(showLabels ? open : true) &&
@@ -118,25 +119,23 @@ export function Sidebar({
                       ? activeHref === '/'
                       : activeHref === item.href || activeHref.startsWith(`${item.href}/`);
                   return (
-                    <Pressable
+                    <AnimatedPressable
                       key={item.href}
                       onPress={() => {
                         router.push(item.href as never);
                         onNavigate?.();
                       }}
-                      style={({ pressed }) => [
+                      style={[
                         styles.item,
                         active && styles.itemActive,
                         !showLabels && styles.itemIconOnly,
-                        pressed && !active && styles.itemPressed,
                       ]}
                     >
-                      {active ? <View style={styles.activeBar} /> : null}
                       <View style={[styles.iconWrap, active && styles.iconWrapActive]}>
                         <Icon
                           name={item.icon}
                           size={17}
-                          color={active ? '#FFFFFF' : colors.sidebarTextMuted}
+                          color={active ? colors.brandPrimary : colors.textMuted}
                         />
                       </View>
                       {showLabels ? (
@@ -147,7 +146,7 @@ export function Sidebar({
                           {item.label}
                         </Text>
                       ) : null}
-                    </Pressable>
+                    </AnimatedPressable>
                   );
                 })}
             </View>
@@ -157,24 +156,15 @@ export function Sidebar({
 
       {showLabels ? (
         <View style={styles.footer}>
-          <Avatar name={currentUser.name} color={colors.primary} size={40} />
+          <Avatar name={displayName} color={colors.brandPrimary} size={36} />
           <View style={styles.footerText}>
             <Text style={styles.footerName} numberOfLines={1}>
-              {currentUser.name}
+              {displayName}
             </Text>
             <Text style={styles.footerRole} numberOfLines={1}>
-              {currentUser.role}
+              متّصل الآن
             </Text>
           </View>
-          <Pressable
-            style={styles.settingsBtn}
-            onPress={() => {
-              router.push('/settings');
-              onNavigate?.();
-            }}
-          >
-            <Icon name="Settings" size={16} color={colors.sidebarText} />
-          </Pressable>
         </View>
       ) : null}
     </View>
@@ -183,21 +173,17 @@ export function Sidebar({
 
 const styles = StyleSheet.create({
   sidebar: {
-    backgroundColor: colors.sidebar,
+    backgroundColor: colors.bgSurface,
     borderLeftWidth: 1,
-    borderLeftColor: colors.sidebarBorder,
+    borderLeftColor: colors.borderSubtle,
     height: '100%',
   },
   drawerSidebar: {
     borderLeftWidth: 0,
     flex: 1,
   },
-  expanded: {
-    width: '100%',
-  },
-  collapsed: {
-    width: '100%',
-  },
+  expanded: { width: '100%' },
+  collapsed: { width: '100%' },
   brand: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -205,36 +191,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
     paddingBottom: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.sidebarBorder,
-    marginBottom: spacing.sm,
   },
   logo: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: colors.primary,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.brandPrimary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoText: {
     color: '#fff',
-    fontFamily: fonts.bold,
-    fontSize: 16,
+    fontFamily: arFonts.bold,
+    fontSize: 18,
   },
-  brandText: {
-    flex: 1,
-    minWidth: 0,
-  },
+  brandText: { flex: 1, minWidth: 0 },
   brandTitle: {
-    color: '#F8FAFC',
-    fontFamily: fonts.bold,
-    fontSize: 15,
+    color: colors.textPrimary,
+    fontFamily: arFonts.bold,
+    fontSize: 17,
     textAlign: 'right',
   },
   brandSub: {
-    color: colors.sidebarTextMuted,
-    fontFamily: fonts.regular,
+    color: colors.textMuted,
+    fontFamily: arFonts.regular,
     fontSize: 11,
     textAlign: 'right',
     marginTop: 2,
@@ -247,88 +227,58 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.sidebarMuted,
+    backgroundColor: colors.bgCanvas,
     borderWidth: 1,
-    borderColor: colors.sidebarBorder,
-    borderRadius: radii.lg,
+    borderColor: colors.borderSubtle,
+    borderRadius: radii.full,
     paddingHorizontal: spacing.md,
-    minHeight: 44,
+    minHeight: 40,
   },
   searchInput: {
     flex: 1,
-    color: colors.sidebarText,
-    fontFamily: fonts.regular,
+    color: colors.textPrimary,
+    fontFamily: arFonts.regular,
     fontSize: 13,
     textAlign: 'right',
-    writingDirection: 'rtl',
     paddingVertical: spacing.sm,
   },
-  nav: {
-    flex: 1,
-  },
+  nav: { flex: 1 },
   navContent: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing['2xl'],
     gap: 2,
   },
-  group: {
-    marginBottom: spacing.md,
-  },
+  group: { marginBottom: spacing.sm },
   groupHeader: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   groupTitle: {
-    color: '#7C8AA5',
-    fontFamily: fonts.semiBold,
+    color: colors.textMuted,
+    fontFamily: arFonts.semiBold,
     fontSize: 11,
     textAlign: 'right',
-    letterSpacing: 0.3,
-  },
-  groupChevron: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    backgroundColor: colors.sidebarMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   item: {
-    position: 'relative',
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: 10,
-    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    paddingHorizontal: spacing.sm,
     borderRadius: radii.lg,
-    marginBottom: 3,
-    minHeight: 46,
-    overflow: 'hidden',
+    marginBottom: 2,
+    minHeight: 44,
   },
   itemIconOnly: {
     justifyContent: 'center',
     paddingHorizontal: 0,
   },
-  itemPressed: {
-    backgroundColor: 'rgba(148, 163, 184, 0.10)',
-  },
   itemActive: {
-    backgroundColor: colors.sidebarActive,
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.35)',
-  },
-  activeBar: {
-    position: 'absolute',
-    right: 0,
-    top: 10,
-    bottom: 10,
-    width: 3,
-    borderRadius: 3,
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.brandSoft,
   },
   iconWrap: {
     width: 32,
@@ -336,21 +286,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(148, 163, 184, 0.12)',
+    backgroundColor: colors.bgCanvas,
   },
   iconWrapActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: '#fff',
   },
   itemLabel: {
     flex: 1,
-    color: colors.sidebarText,
-    fontFamily: fonts.medium,
+    color: colors.textSecondary,
+    fontFamily: arFonts.medium,
     fontSize: 13.5,
     textAlign: 'right',
   },
   itemLabelActive: {
-    color: '#FFFFFF',
-    fontFamily: fonts.semiBold,
+    color: colors.brandPrimary,
+    fontFamily: arFonts.semiBold,
   },
   footer: {
     flexDirection: 'row-reverse',
@@ -359,32 +309,21 @@ const styles = StyleSheet.create({
     margin: spacing.md,
     padding: spacing.md,
     borderRadius: radii.xl,
-    backgroundColor: colors.sidebarMuted,
+    backgroundColor: colors.bgCanvas,
     borderWidth: 1,
-    borderColor: colors.sidebarBorder,
+    borderColor: colors.borderSubtle,
   },
-  footerText: {
-    flex: 1,
-    minWidth: 0,
-  },
+  footerText: { flex: 1, minWidth: 0 },
   footerName: {
-    color: '#F8FAFC',
-    fontFamily: fonts.semiBold,
+    color: colors.textPrimary,
+    fontFamily: arFonts.semiBold,
     fontSize: 13,
     textAlign: 'right',
   },
   footerRole: {
-    color: colors.sidebarTextMuted,
-    fontFamily: fonts.regular,
+    color: colors.statusSuccess,
+    fontFamily: arFonts.regular,
     fontSize: 11,
     textAlign: 'right',
-  },
-  settingsBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(59, 130, 246, 0.18)',
   },
 });

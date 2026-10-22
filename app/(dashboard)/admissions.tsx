@@ -1,13 +1,2 @@
-import { ModuleListPage } from '@/components/modules/ModuleListPage';
-
-export default function Page() {
-  return (
-    <ModuleListPage
-      title="القبول والتسجيل"
-      subtitle="طلبات الالتحاق ومراحل الاعتماد"
-      group="شؤون الطلاب"
-      type="generic"
-      entity="طلبات القبول"
-    />
-  );
-}
+/** Phase 1 admissions pipeline — shared with school-admin portal */
+export { default } from '../(school-admin)/admissions';

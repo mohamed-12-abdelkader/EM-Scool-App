@@ -99,7 +99,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <SafeAreaView style={styles.drawerSafe} edges={['top', 'bottom']}>
                 <View style={styles.drawerHead}>
                   <Pressable onPress={closeDrawer} style={styles.closeBtn} hitSlop={10}>
-                    <Icon name="X" size={18} color="#E2E8F0" />
+                    <Icon name="X" size={18} color={colors.textSecondary} />
                   </Pressable>
                   <View style={styles.drawerHeadText}>
                     <Text style={styles.drawerTitle}>القائمة الرئيسية</Text>
@@ -119,11 +119,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bgCanvas,
   },
   root: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.bgCanvas,
     minHeight: '100%',
     width: '100%',
     position: 'relative',
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 0,
     height: '100%',
-    backgroundColor: colors.sidebar,
+    backgroundColor: colors.bgSurface,
     borderTopLeftRadius: 20,
     borderBottomLeftRadius: 20,
     overflow: 'hidden',
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   drawerSafe: {
     flex: 1,
-    backgroundColor: colors.sidebar,
+    backgroundColor: colors.bgSurface,
   },
   drawerHead: {
     flexDirection: 'row-reverse',
@@ -184,13 +184,13 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   drawerTitle: {
-    color: '#F8FAFC',
+    color: colors.textPrimary,
     fontFamily: fonts.bold,
     fontSize: 18,
     textAlign: 'right',
   },
   drawerSubtitle: {
-    color: '#94A3B8',
+    color: colors.textMuted,
     fontFamily: fonts.regular,
     fontSize: 12,
     textAlign: 'right',
@@ -201,9 +201,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.sidebarMuted,
+    backgroundColor: colors.bgCanvas,
     borderWidth: 1,
-    borderColor: colors.sidebarBorder,
+    borderColor: colors.borderSubtle,
   },
 });
 
